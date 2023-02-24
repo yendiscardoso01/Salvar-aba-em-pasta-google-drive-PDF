@@ -1,0 +1,56 @@
+/**
+ * Exporta a planilha ativa para PDF e salva na pasta especificada no Google Drive.
+ */
+
+function exportarParaPDF() {
+
+  // Obter a planilha ativa e o nome da aba que será exportada.
+  var planilha = SpreadsheetApp.getActiveSpreadsheet();
+  var aba = planilha.getSheetByName('GRÁFICOS');
+  var ultatualizacao = aba.getRange('J1').getValue();
+
+  // Definir o nome do arquivo PDF que será salvo no Google Drive.
+  var nomeArquivo = 'DASHBOARD EMBALAGENS - PLÁSTICOS JLLE - ' + ultatualizacao + '.pdf';
+
+  // Obter a pasta do Google Drive onde o arquivo PDF será salvo.
+  var pastaDrive = DriveApp.getFolderById('1NFXUQzbF9s5B-KswMnwp1WcagUbQCQl2');
+
+  // Definir as configurações de exportação para PDF.
+  var idPlanilha = planilha.getId();
+  var idAba = aba.getSheetId();
+  var url = 'https://docs.google.com/spreadsheets/d/SS_ID/export?'.replace('SS_ID', idPlanilha);
+
+  var urlExt =
+    'exportFormat=pdf' +                    // formato de exportação
+    '&format=pdf' +
+    '&size=8.1296378x8.26771654' +          // tamanho do papel
+    '&top_margin=0.00' +
+    '&bottom_margin=0.00' +
+    '&left_margin=0.00' +
+    '&right_margin=0.00' +
+    '&portrait=true' +                      // orientação do papel
+    '&fitw=true' +                          // ajustar à largura
+    '&printtitle=false' +                   // mostrar título da planilha
+    '&sheetnames=false' +                   // mostrar nome da planilha no rodapé
+    '&pagenum=false' +                      // mostrar números das páginas
+    '&gridlines=false' +                    // mostrar linhas de grade
+    '&fzr=true' +                           // repetir linhas congeladas
+    '&horizontal_alignment=CENTER' +        // alinhamento horizontal
+    '&vertical_alignment=TOP' +             // alinhamento vertical
+    '&gid=';                                // ID da aba a ser exportada
+
+  url += urlExt + idAba;
+
+  // Obter um token de autorização para acessar a planilha.
+  var token = ScriptApp.getOAuthToken();
+
+  // Exportar a planilha para PDF e salvá-la na pasta do Google Drive.
+  var response = UrlFetchApp.fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+  var pdfBlob = response.getBlob();
+  var pdfFile = pastaDrive.createFile(pdfBlob);
+  pdfFile.setName(nomeArquivo);
+
+  // Exibir uma mensagem de sucesso.
+  //var mensagem = 'O arquivo PDF "' + nomeArquivo + '" foi salvo na pasta "' + pastaDrive.getName() + '".';
+  //SpreadsheetApp.getUi().alert(mensagem);
+}
